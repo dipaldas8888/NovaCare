@@ -30,7 +30,7 @@ public class PatientController {
     }
 
     @GetMapping
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('USER')")
     public ResponseEntity<List<Patient>> getAllPatients() {
         return new ResponseEntity<>(patientService.getAllPatients(), HttpStatus.OK);
     }

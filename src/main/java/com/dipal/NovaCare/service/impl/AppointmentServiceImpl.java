@@ -6,10 +6,12 @@ import com.dipal.NovaCare.exception.CustomException;
 import com.dipal.NovaCare.model.Appointment;
 import com.dipal.NovaCare.model.Doctor;
 import com.dipal.NovaCare.model.Patient;
+import com.dipal.NovaCare.model.User;
 import com.dipal.NovaCare.repository.AppointmentRepository;
 import com.dipal.NovaCare.repository.DoctorRepository;
 import com.dipal.NovaCare.repository.PatientRepository;
 import com.dipal.NovaCare.service.AppointmentService;
+import com.dipal.NovaCare.service.UserService;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
@@ -22,13 +24,17 @@ public class AppointmentServiceImpl implements AppointmentService {
     private final AppointmentRepository appointmentRepository;
     private final DoctorRepository doctorRepository;
     private final PatientRepository patientRepository;
+    private final UserService userService;
+
 
     public AppointmentServiceImpl(AppointmentRepository appointmentRepository,
                                   DoctorRepository doctorRepository,
-                                  PatientRepository patientRepository) {
+                                  PatientRepository patientRepository,
+                                  UserService userService) {
         this.appointmentRepository = appointmentRepository;
         this.doctorRepository = doctorRepository;
         this.patientRepository = patientRepository;
+        this.userService = userService;
     }
 
     @Override
@@ -36,10 +42,10 @@ public class AppointmentServiceImpl implements AppointmentService {
         Doctor doctor = doctorRepository.findById(appointmentDTO.getDoctorId())
                 .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, "Doctor not found"));
 
-        Patient patient = patientRepository.findById(appointmentDTO.getPatientId())
+        User currentUser = userService.getCurrentUser();
+        Patient patient = patientRepository.findByUser(currentUser)
                 .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, "Patient not found"));
 
-        // Check if doctor has reached max patients for the day
         LocalDateTime startOfDay = appointmentDTO.getAppointmentDateTime().toLocalDate().atStartOfDay();
         LocalDateTime endOfDay = startOfDay.plusDays(1);
 

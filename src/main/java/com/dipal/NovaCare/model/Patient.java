@@ -27,4 +27,8 @@ public class Patient {
 
     @Column(nullable = false)
     private String medicalHistory;
+
+    @OneToOne
+    @JoinColumn(name = "user_id", referencedColumnName = "id", unique = true)
+    private User user;
 }
