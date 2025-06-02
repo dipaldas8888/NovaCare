@@ -4,8 +4,10 @@ package com.dipal.NovaCare.service.impl;
 import com.dipal.NovaCare.dto.LoginDTO;
 import com.dipal.NovaCare.dto.RegisterDTO;
 import com.dipal.NovaCare.exception.CustomException;
+import com.dipal.NovaCare.model.Patient;
 import com.dipal.NovaCare.model.Role;
 import com.dipal.NovaCare.model.User;
+import com.dipal.NovaCare.repository.PatientRepository;
 import com.dipal.NovaCare.repository.RoleRepository;
 import com.dipal.NovaCare.repository.UserRepository;
 import com.dipal.NovaCare.security.JwtTokenProvider;
@@ -33,17 +35,22 @@ public class UserServiceImpl implements UserService {
     private final JwtTokenProvider jwtTokenProvider;
     @Value("${app.admin.secret}")
     private String validAdminSecret;
+    private final PatientRepository patientRepository;
 
+
+    // Update constructor
     public UserServiceImpl(AuthenticationManager authenticationManager,
                            UserRepository userRepository,
                            RoleRepository roleRepository,
                            PasswordEncoder passwordEncoder,
-                           JwtTokenProvider jwtTokenProvider) {
+                           JwtTokenProvider jwtTokenProvider,
+                           PatientRepository patientRepository) {
         this.authenticationManager = authenticationManager;
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtTokenProvider = jwtTokenProvider;
+        this.patientRepository = patientRepository;
     }
 
     @Override
@@ -66,6 +73,15 @@ public class UserServiceImpl implements UserService {
         user.setRoles(Collections.singleton(roles));
 
         userRepository.save(user);
+
+        Patient patient = new Patient();
+        patient.setName(user.getUsername());
+        patient.setEmail(user.getEmail());
+        patient.setContactNumber(""); // or from registerDTO if available
+        patient.setAddress("");
+        patient.setMedicalHistory("");
+        patient.setUser(user);
+        patientRepository.save(patient);
         return "User registered successfully";
     }
 
