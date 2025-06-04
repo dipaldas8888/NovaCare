@@ -77,7 +77,7 @@ public class UserServiceImpl implements UserService {
         Patient patient = new Patient();
         patient.setName(user.getUsername());
         patient.setEmail(user.getEmail());
-        patient.setContactNumber(""); // or from registerDTO if available
+        patient.setContactNumber("");
         patient.setAddress("");
         patient.setMedicalHistory("");
         patient.setUser(user);
@@ -122,6 +122,15 @@ public class UserServiceImpl implements UserService {
         user.setRoles(Collections.singleton(adminRole));
 
         userRepository.save(user);
+
+        Patient patient = new Patient();
+        patient.setName(user.getUsername());
+        patient.setEmail(user.getEmail());
+        patient.setContactNumber("");
+        patient.setAddress("");
+        patient.setMedicalHistory("");
+        patient.setUser(user);
+        patientRepository.save(patient);
 
         return "Admin registered successfully";  }
 
