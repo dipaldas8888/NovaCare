@@ -32,7 +32,7 @@ public class AppointmentController {
     }
 
     @GetMapping
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('USER')")
     public ResponseEntity<List<Appointment>> getAllAppointments() {
         return new ResponseEntity<>(
                 appointmentService.getAllAppointments(),
