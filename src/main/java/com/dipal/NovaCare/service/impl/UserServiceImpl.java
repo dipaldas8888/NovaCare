@@ -4,16 +4,20 @@ package com.dipal.NovaCare.service.impl;
 import com.dipal.NovaCare.dto.LoginDTO;
 import com.dipal.NovaCare.dto.RegisterDTO;
 import com.dipal.NovaCare.exception.CustomException;
+import com.dipal.NovaCare.model.OtpToken;
 import com.dipal.NovaCare.model.Patient;
 import com.dipal.NovaCare.model.Role;
 import com.dipal.NovaCare.model.User;
+import com.dipal.NovaCare.repository.OtpTokenRepository;
 import com.dipal.NovaCare.repository.PatientRepository;
 import com.dipal.NovaCare.repository.RoleRepository;
 import com.dipal.NovaCare.repository.UserRepository;
 import com.dipal.NovaCare.security.JwtTokenProvider;
+import com.dipal.NovaCare.service.EmailService;
 import com.dipal.NovaCare.service.UserService;
 import jakarta.transaction.Transactional;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -23,7 +27,10 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.beans.factory.annotation.Value;
 
+import java.time.LocalDateTime;
 import java.util.Collections;
+import java.util.Map;
+import java.util.Random;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -36,7 +43,8 @@ public class UserServiceImpl implements UserService {
     @Value("${app.admin.secret}")
     private String validAdminSecret;
     private final PatientRepository patientRepository;
-
+    private final OtpTokenRepository otpTokenRepository;
+    private  final EmailService emailService;
 
     // Update constructor
     public UserServiceImpl(AuthenticationManager authenticationManager,
@@ -44,13 +52,16 @@ public class UserServiceImpl implements UserService {
                            RoleRepository roleRepository,
                            PasswordEncoder passwordEncoder,
                            JwtTokenProvider jwtTokenProvider,
-                           PatientRepository patientRepository) {
+                           PatientRepository patientRepository,OtpTokenRepository otpTokenRepository,
+                           EmailService emailService) {
         this.authenticationManager = authenticationManager;
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtTokenProvider = jwtTokenProvider;
         this.patientRepository = patientRepository;
+        this.otpTokenRepository = otpTokenRepository;
+        this.emailService = emailService;
     }
 
     @Override
@@ -141,4 +152,67 @@ public class UserServiceImpl implements UserService {
         return userRepository.findByUsername(username)
                 .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, "User not found"));
     }
+    @Override
+    public ResponseEntity<?> forgotPassword(String email) {
+        var userOpt = userRepository.findByEmail(email);
+        if (userOpt.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("status", "fail", "message", "Email not found"));
+        }
+
+        // Generate 6-digit OTP
+        String otp = String.format("%06d", new Random().nextInt(999999));
+        LocalDateTime expiry = LocalDateTime.now().plusMinutes(10);
+
+        // Remove old OTPs
+        otpTokenRepository.deleteByEmail(email);
+
+        // Save new OTP
+        OtpToken token = new OtpToken();
+        token.setEmail(email);
+        token.setOtp(otp);
+        token.setExpiryTime(expiry);
+        otpTokenRepository.save(token);
+
+        // Send email
+        try {
+            emailService.sendOtpEmail(email, otp);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("status", "fail", "message", "Failed to send OTP"));
+        }
+
+        return ResponseEntity.ok(Map.of("status", "success", "message", "OTP sent to email"));
+    }
+
+    @Override
+    public ResponseEntity<?> resetPassword(String email, String otp, String newPassword) {
+        var tokenOpt = otpTokenRepository.findByEmailAndOtp(email, otp);
+        if (tokenOpt.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("status", "fail", "message", "Invalid OTP"));
+        }
+
+        OtpToken token = tokenOpt.get();
+        if (token.getExpiryTime().isBefore(LocalDateTime.now())) {
+            otpTokenRepository.delete(token);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("status", "fail", "message", "OTP expired"));
+        }
+
+        var userOpt = userRepository.findByEmail(email);
+        if (userOpt.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("status", "fail", "message", "User not found"));
+        }
+
+        var user = userOpt.get();
+        user.setPassword(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
+
+        otpTokenRepository.delete(token);
+
+        return ResponseEntity.ok(Map.of("status", "success", "message", "Password reset successfully"));
+    }
 }
+
