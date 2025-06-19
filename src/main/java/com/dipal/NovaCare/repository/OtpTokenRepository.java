@@ -6,6 +6,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.Optional;
 
 public interface OtpTokenRepository extends JpaRepository<OtpToken,Long> {
-    public Optional<OtpToken> findByEmailAndOtp(String email, String otp);
-    public void deleteByEmail(String email);
+     Optional<OtpToken> findByEmailAndOtp(String email, String otp);
+    void deleteByEmail(String email);
 }
