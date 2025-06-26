@@ -153,6 +153,7 @@ public class UserServiceImpl implements UserService {
                 .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, "User not found"));
     }
     @Override
+    @Transactional
     public ResponseEntity<?> forgotPassword(String email) {
         var userOpt = userRepository.findByEmail(email);
         if (userOpt.isEmpty()) {
@@ -160,21 +161,21 @@ public class UserServiceImpl implements UserService {
                     .body(Map.of("status", "fail", "message", "Email not found"));
         }
 
-        // Generate 6-digit OTP
+
         String otp = String.format("%06d", new Random().nextInt(999999));
         LocalDateTime expiry = LocalDateTime.now().plusMinutes(10);
 
-        // Remove old OTPs
+
         otpTokenRepository.deleteByEmail(email);
 
-        // Save new OTP
+
         OtpToken token = new OtpToken();
         token.setEmail(email);
         token.setOtp(otp);
         token.setExpiryTime(expiry);
         otpTokenRepository.save(token);
 
-        // Send email
+
         try {
             emailService.sendOtpEmail(email, otp);
         } catch (Exception e) {
@@ -186,6 +187,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional
     public ResponseEntity<?> resetPassword(String email, String otp, String newPassword) {
         var tokenOpt = otpTokenRepository.findByEmailAndOtp(email, otp);
         if (tokenOpt.isEmpty()) {
