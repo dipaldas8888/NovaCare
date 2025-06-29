@@ -1,14 +1,16 @@
 package com.dipal.NovaCare.service.impl;
 
 
+import com.dipal.NovaCare.dto.ForgotPasswordDTO;
 import com.dipal.NovaCare.dto.LoginDTO;
 import com.dipal.NovaCare.dto.RegisterDTO;
+import com.dipal.NovaCare.dto.ResetPasswordDTO;
 import com.dipal.NovaCare.exception.CustomException;
-import com.dipal.NovaCare.model.OtpToken;
+import com.dipal.NovaCare.model.PasswordResetToken;
 import com.dipal.NovaCare.model.Patient;
 import com.dipal.NovaCare.model.Role;
 import com.dipal.NovaCare.model.User;
-import com.dipal.NovaCare.repository.OtpTokenRepository;
+import com.dipal.NovaCare.repository.PasswordResetTokenRepository;
 import com.dipal.NovaCare.repository.PatientRepository;
 import com.dipal.NovaCare.repository.RoleRepository;
 import com.dipal.NovaCare.repository.UserRepository;
@@ -30,7 +32,7 @@ import org.springframework.beans.factory.annotation.Value;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.Map;
-import java.util.Random;
+import java.util.UUID;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -40,10 +42,10 @@ public class UserServiceImpl implements UserService {
     private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
+    private final PasswordResetTokenRepository passwordResetTokenRepository;
     @Value("${app.admin.secret}")
     private String validAdminSecret;
     private final PatientRepository patientRepository;
-    private final OtpTokenRepository otpTokenRepository;
     private  final EmailService emailService;
 
     // Update constructor
@@ -52,16 +54,17 @@ public class UserServiceImpl implements UserService {
                            RoleRepository roleRepository,
                            PasswordEncoder passwordEncoder,
                            JwtTokenProvider jwtTokenProvider,
-                           PatientRepository patientRepository,OtpTokenRepository otpTokenRepository,
-                           EmailService emailService) {
+                           PatientRepository patientRepository,
+                           EmailService emailService, PasswordResetTokenRepository passwordResetTokenRepository) {
         this.authenticationManager = authenticationManager;
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtTokenProvider = jwtTokenProvider;
         this.patientRepository = patientRepository;
-        this.otpTokenRepository = otpTokenRepository;
         this.emailService = emailService;
+        this.passwordResetTokenRepository = passwordResetTokenRepository;
+
     }
 
     @Override
@@ -154,67 +157,78 @@ public class UserServiceImpl implements UserService {
     }
     @Override
     @Transactional
-    public ResponseEntity<?> forgotPassword(String email) {
-        var userOpt = userRepository.findByEmail(email);
-        if (userOpt.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(Map.of("status", "fail", "message", "Email not found"));
-        }
-
-
-        String otp = String.format("%06d", new Random().nextInt(999999));
-        LocalDateTime expiry = LocalDateTime.now().plusMinutes(10);
-
-
-        otpTokenRepository.deleteByEmail(email);
-
-
-        OtpToken token = new OtpToken();
-        token.setEmail(email);
-        token.setOtp(otp);
-        token.setExpiryTime(expiry);
-        otpTokenRepository.save(token);
-
-
+    public ResponseEntity<?> forgotPassword(ForgotPasswordDTO forgotPasswordDTO) {
         try {
-            emailService.sendOtpEmail(email, otp);
+            User user = userRepository.findByEmail(forgotPasswordDTO.getEmail())
+                    .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, "User not found"));
+
+            // Delete any existing token
+            passwordResetTokenRepository.deleteByUser(user);
+
+            // Generate token
+            String token = generateResetToken();
+            LocalDateTime expiryDate = LocalDateTime.now().plusHours(1);
+
+            // Save token
+            PasswordResetToken passwordResetToken = new PasswordResetToken();
+            passwordResetToken.setToken(token);
+            passwordResetToken.setUser(user);
+            passwordResetToken.setExpiryDate(expiryDate);
+            passwordResetTokenRepository.save(passwordResetToken);
+
+            // Send email
+            String resetLink = "http://your-frontend-url/reset-password?token=" + token;
+            emailService.sendPasswordResetEmail(user.getEmail(), resetLink);
+
+            return ResponseEntity.ok()
+                    .body(Map.of("message", "Password reset link sent to your email"));
+        } catch (CustomException e) {
+            return ResponseEntity.status(e.getStatus())
+                    .body(Map.of("message", e.getMessage()));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("status", "fail", "message", "Failed to send OTP"));
+                    .body(Map.of("message", "Error processing request"));
         }
-
-        return ResponseEntity.ok(Map.of("status", "success", "message", "OTP sent to email"));
     }
 
     @Override
     @Transactional
-    public ResponseEntity<?> resetPassword(String email, String otp, String newPassword) {
-        var tokenOpt = otpTokenRepository.findByEmailAndOtp(email, otp);
-        if (tokenOpt.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(Map.of("status", "fail", "message", "Invalid OTP"));
+    public ResponseEntity<?> resetPassword(ResetPasswordDTO resetPasswordDTO) {
+        try {
+            if (!resetPasswordDTO.getNewPassword().equals(resetPasswordDTO.getConfirmPassword())) {
+                throw new CustomException(HttpStatus.BAD_REQUEST, "Passwords don't match");
+            }
+
+            PasswordResetToken resetToken = passwordResetTokenRepository
+                    .findByToken(resetPasswordDTO.getToken())
+                    .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, "Invalid reset token"));
+
+            if (resetToken.getExpiryDate().isBefore(LocalDateTime.now())) {
+                passwordResetTokenRepository.delete(resetToken);
+                throw new CustomException(HttpStatus.BAD_REQUEST, "Reset token expired");
+            }
+
+            // Update password
+            User user = resetToken.getUser();
+            user.setPassword(passwordEncoder.encode(resetPasswordDTO.getNewPassword()));
+            userRepository.save(user);
+
+            // Delete used token
+            passwordResetTokenRepository.delete(resetToken);
+
+            return ResponseEntity.ok()
+                    .body(Map.of("message", "Password reset successful"));
+        } catch (CustomException e) {
+            return ResponseEntity.status(e.getStatus())
+                    .body(Map.of("message", e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("message", "Error processing request"));
         }
+    }
 
-        OtpToken token = tokenOpt.get();
-        if (token.getExpiryTime().isBefore(LocalDateTime.now())) {
-            otpTokenRepository.delete(token);
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(Map.of("status", "fail", "message", "OTP expired"));
-        }
-
-        var userOpt = userRepository.findByEmail(email);
-        if (userOpt.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(Map.of("status", "fail", "message", "User not found"));
-        }
-
-        var user = userOpt.get();
-        user.setPassword(passwordEncoder.encode(newPassword));
-        userRepository.save(user);
-
-        otpTokenRepository.delete(token);
-
-        return ResponseEntity.ok(Map.of("status", "success", "message", "Password reset successfully"));
+    private String generateResetToken() {
+        return UUID.randomUUID().toString();
     }
 }
 

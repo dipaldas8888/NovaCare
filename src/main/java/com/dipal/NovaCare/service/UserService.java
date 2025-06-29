@@ -1,8 +1,10 @@
 package com.dipal.NovaCare.service;
 
 
+import com.dipal.NovaCare.dto.ForgotPasswordDTO;
 import com.dipal.NovaCare.dto.LoginDTO;
 import com.dipal.NovaCare.dto.RegisterDTO;
+import com.dipal.NovaCare.dto.ResetPasswordDTO;
 import com.dipal.NovaCare.model.User;
 import org.springframework.http.ResponseEntity;
 
@@ -11,8 +13,11 @@ public interface UserService {
     String login(LoginDTO loginDTO);
     User getCurrentUser();
 
-    ResponseEntity<?> forgotPassword(String email);
-    ResponseEntity<?> resetPassword(String email, String otp, String newPassword);
+   
 
     String registerAdmin(RegisterDTO registerDTO, String secret);
+
+    ResponseEntity<?> resetPassword(ResetPasswordDTO resetPasswordDTO);
+
+    ResponseEntity<?> forgotPassword(ForgotPasswordDTO forgotPasswordDTO);
 }

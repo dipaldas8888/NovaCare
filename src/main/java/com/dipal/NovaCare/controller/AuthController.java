@@ -1,8 +1,10 @@
 package com.dipal.NovaCare.controller;
 
 
+import com.dipal.NovaCare.dto.ForgotPasswordDTO;
 import com.dipal.NovaCare.dto.LoginDTO;
 import com.dipal.NovaCare.dto.RegisterDTO;
+import com.dipal.NovaCare.dto.ResetPasswordDTO;
 import com.dipal.NovaCare.model.User;
 import com.dipal.NovaCare.service.UserService;
 import org.springframework.http.HttpStatus;
@@ -51,16 +53,12 @@ public class AuthController {
     }
 
     @PostMapping("/forgot-password")
-    public ResponseEntity<?> forgotPassword(@RequestBody Map<String, String> request) {
-        String email = request.get("email");
-        return userService.forgotPassword(email);
+    public ResponseEntity<?> forgotPassword(@RequestBody ForgotPasswordDTO forgotPasswordDTO) {
+        return userService.forgotPassword(forgotPasswordDTO);
     }
 
     @PostMapping("/reset-password")
-    public ResponseEntity<?> resetPassword(@RequestBody Map<String, String> request) {
-        String email = request.get("email");
-        String otp = request.get("otp");
-        String newPassword = request.get("newPassword");
-        return userService.resetPassword(email, otp, newPassword);
+    public ResponseEntity<?> resetPassword(@RequestBody ResetPasswordDTO resetPasswordDTO) {
+        return userService.resetPassword(resetPasswordDTO);
     }
 }
