@@ -158,36 +158,32 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public ResponseEntity<?> forgotPassword(ForgotPasswordDTO forgotPasswordDTO) {
+
+        User user = userRepository.findByEmail(forgotPasswordDTO.getEmail())
+                .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, "User not found"));
+
         try {
-            User user = userRepository.findByEmail(forgotPasswordDTO.getEmail())
-                    .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, "User not found"));
-
-            // Delete any existing token
             passwordResetTokenRepository.deleteByUser(user);
+            passwordResetTokenRepository.flush();
 
-            // Generate token
-            String token = generateResetToken();
-            LocalDateTime expiryDate = LocalDateTime.now().plusHours(1);
 
-            // Save token
+            String token = UUID.randomUUID().toString();
+
             PasswordResetToken passwordResetToken = new PasswordResetToken();
             passwordResetToken.setToken(token);
             passwordResetToken.setUser(user);
-            passwordResetToken.setExpiryDate(expiryDate);
+            passwordResetToken.setExpiryDate(LocalDateTime.now().plusHours(1));
+
             passwordResetTokenRepository.save(passwordResetToken);
 
-            // Send email
-            String resetLink = "http://your-frontend-url/reset-password?token=" + token;
+            String resetLink = "http://localhost:5173/reset-password?token=" + token;
+
             emailService.sendPasswordResetEmail(user.getEmail(), resetLink);
 
-            return ResponseEntity.ok()
-                    .body(Map.of("message", "Password reset link sent to your email"));
-        } catch (CustomException e) {
-            return ResponseEntity.status(e.getStatus())
-                    .body(Map.of("message", e.getMessage()));
+            return ResponseEntity.ok(Map.of("message", "Password reset link sent to your email"));
+
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("message", "Error processing request"));
+            throw new CustomException(HttpStatus.INTERNAL_SERVER_ERROR, "Error processing password reset request");
         }
     }
 
