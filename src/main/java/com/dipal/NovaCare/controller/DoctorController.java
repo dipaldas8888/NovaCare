@@ -5,6 +5,7 @@ import com.dipal.NovaCare.dto.DoctorDTO;
 import com.dipal.NovaCare.model.Doctor;
 import com.dipal.NovaCare.service.DoctorService;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -21,15 +22,16 @@ public class DoctorController {
         this.doctorService = doctorService;
     }
 
-    @PostMapping
+
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Doctor> addDoctor(@RequestBody DoctorDTO doctorDTO) {
+    public ResponseEntity<Doctor> addDoctor(@ModelAttribute DoctorDTO doctorDTO) {
         return new ResponseEntity<>(doctorService.addDoctor(doctorDTO), HttpStatus.CREATED);
     }
 
     @GetMapping
     public ResponseEntity<List<Doctor>> getAllDoctors() {
-        System.out.println("Fetching all doctors");
+
         return new ResponseEntity<>(doctorService.getAllDoctors(), HttpStatus.OK);
     }
 
@@ -46,11 +48,12 @@ public class DoctorController {
                 HttpStatus.OK);
     }
 
-    @PutMapping("/{id}")
+
+    @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Doctor> updateDoctor(
             @PathVariable Long id,
-            @RequestBody DoctorDTO doctorDTO) {
+            @ModelAttribute DoctorDTO doctorDTO) {
         return new ResponseEntity<>(
                 doctorService.updateDoctor(id, doctorDTO),
                 HttpStatus.OK);

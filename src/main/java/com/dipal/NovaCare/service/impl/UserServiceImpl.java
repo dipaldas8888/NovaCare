@@ -48,7 +48,7 @@ public class UserServiceImpl implements UserService {
     private final PatientRepository patientRepository;
     private  final EmailService emailService;
 
-    // Update constructor
+
     public UserServiceImpl(AuthenticationManager authenticationManager,
                            UserRepository userRepository,
                            RoleRepository roleRepository,
@@ -204,12 +204,12 @@ public class UserServiceImpl implements UserService {
                 throw new CustomException(HttpStatus.BAD_REQUEST, "Reset token expired");
             }
 
-            // Update password
+
             User user = resetToken.getUser();
             user.setPassword(passwordEncoder.encode(resetPasswordDTO.getNewPassword()));
             userRepository.save(user);
 
-            // Delete used token
+
             passwordResetTokenRepository.delete(resetToken);
 
             return ResponseEntity.ok()
