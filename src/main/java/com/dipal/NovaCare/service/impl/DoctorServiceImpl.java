@@ -49,7 +49,7 @@ public class DoctorServiceImpl implements DoctorService {
 
         if (doctorDTO.getImage() != null && !doctorDTO.getImage().isEmpty()) {
             String fileName = storeFile(doctorDTO.getImage());
-            doctor.setImageUrl(baseUrl + "/images/" + fileName);
+            doctor.setImageUrl(fileName);
         }
         return doctorRepository.save(doctor);
     }
@@ -104,7 +104,7 @@ public class DoctorServiceImpl implements DoctorService {
             }
 
             String fileName = storeFile(doctorDTO.getImage());
-            doctor.setImageUrl(baseUrl + "/images/" + fileName);
+            doctor.setImageUrl(fileName);
         }
         return doctorRepository.save(doctor);
     }
