@@ -37,6 +37,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/doctors/**").permitAll()
                         .requestMatchers("/api/contact/**").permitAll()
                         .requestMatchers("/api/patients/**").permitAll()
+                        .requestMatchers("/uploads/images/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .exceptionHandling(exception -> exception
