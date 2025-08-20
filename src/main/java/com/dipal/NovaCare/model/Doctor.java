@@ -31,8 +31,11 @@ public class Doctor {
     @Column(nullable = false)
     private Integer maxPatientsPerDay;
 
-
     @Column(name = "image_url")
     private String imageUrl;
+
+    @OneToOne
+    @JoinColumn(name = "user_id", referencedColumnName = "id", unique = true)
+    private User user;
 
 }

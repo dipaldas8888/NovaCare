@@ -1,8 +1,6 @@
 package com.dipal.NovaCare.controller;
 
-
 import com.dipal.NovaCare.dto.ForgotPasswordDTO;
-import com.dipal.NovaCare.dto.LoginDTO;
 import com.dipal.NovaCare.dto.RegisterDTO;
 import com.dipal.NovaCare.dto.ResetPasswordDTO;
 import com.dipal.NovaCare.model.User;
@@ -10,7 +8,6 @@ import com.dipal.NovaCare.service.UserService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
@@ -30,25 +27,19 @@ public class AuthController {
         return new ResponseEntity<>(userService.register(registerDTO), HttpStatus.CREATED);
     }
 
-    @PostMapping("/register-admin")
-    public ResponseEntity<String> registerAdmin(
+    @PostMapping("/register-doctor")
+    public ResponseEntity<String> registerDoctor(
             @RequestBody RegisterDTO registerDTO,
             @RequestParam String secret) {
         return new ResponseEntity<>(
-                userService.registerAdmin(registerDTO, secret),
+                userService.registerDoctor(registerDTO, secret),
                 HttpStatus.CREATED);
     }
 
-    @PostMapping("/login")
-    public ResponseEntity<String> login(@RequestBody LoginDTO loginDTO) {
-        return new ResponseEntity<>(userService.login(loginDTO), HttpStatus.OK);
-    }
     @GetMapping("/verify")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('USER')")
-    public ResponseEntity<User> verify(@AuthenticationPrincipal org.springframework.security.core.userdetails.User userDetails) {
-        // Find user by username and return user info (without password)
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER', 'DOCTOR')")
+    public ResponseEntity<User> verify() {
         User user = userService.getCurrentUser();
-        user.setPassword(null); // Hide password
         return ResponseEntity.ok(user);
     }
 

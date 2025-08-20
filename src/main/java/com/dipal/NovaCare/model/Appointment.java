@@ -26,8 +26,14 @@ public class Appointment {
     private LocalDateTime appointmentDateTime;
 
     @Column(nullable = false)
-    private String status; // Scheduled, Completed, Cancelled
+    private String status; // Pending, Accepted, Completed, Cancelled, Rejected
 
     @Column
     private String notes;
+
+    @Column(nullable = false)
+    private String type; // Normal, Video (new field for appointment type)
+
+    @Column
+    private String videoSessionId;
 }

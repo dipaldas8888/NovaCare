@@ -16,4 +16,11 @@ public interface AppointmentService {
     List<Appointment> getDoctorAppointmentsBetweenDates(Long doctorId, LocalDateTime start, LocalDateTime end);
     Appointment updateAppointment(Long id, AppointmentDTO appointmentDTO);
     void cancelAppointment(Long id);
+
+
+        Appointment acceptAppointment(Long id);
+    boolean isUserInAppointment(String userEmail, String appointmentId);
+
+        void rejectAppointment(Long id);
+
 }

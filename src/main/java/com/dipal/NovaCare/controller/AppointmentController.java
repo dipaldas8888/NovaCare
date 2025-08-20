@@ -30,6 +30,20 @@ public class AppointmentController {
                 appointmentService.bookAppointment(appointmentDTO),
                 HttpStatus.CREATED);
     }
+    // ... existing
+
+    @PutMapping("/{id}/accept")
+    @PreAuthorize("hasRole('DOCTOR')")
+    public ResponseEntity<Appointment> acceptAppointment(@PathVariable Long id) {
+        return new ResponseEntity<>(appointmentService.acceptAppointment(id), HttpStatus.OK);
+    }
+
+    @PutMapping("/{id}/reject")
+    @PreAuthorize("hasRole('DOCTOR')")
+    public ResponseEntity<Void> rejectAppointment(@PathVariable Long id) {
+        appointmentService.rejectAppointment(id);
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
 
     @GetMapping
     @PreAuthorize("hasRole('ADMIN') or hasRole('USER')")

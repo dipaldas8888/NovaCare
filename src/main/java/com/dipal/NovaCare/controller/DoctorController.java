@@ -2,6 +2,7 @@ package com.dipal.NovaCare.controller;
 
 
 import com.dipal.NovaCare.dto.DoctorDTO;
+import com.dipal.NovaCare.dto.RegisterDTO;
 import com.dipal.NovaCare.model.Doctor;
 import com.dipal.NovaCare.service.DoctorService;
 import org.springframework.http.HttpStatus;
@@ -28,6 +29,9 @@ public class DoctorController {
     public ResponseEntity<Doctor> addDoctor(@ModelAttribute DoctorDTO doctorDTO) {
         return new ResponseEntity<>(doctorService.addDoctor(doctorDTO), HttpStatus.CREATED);
     }
+    // ... existing
+
+
 
     @GetMapping
     public ResponseEntity<List<Doctor>> getAllDoctors() {
