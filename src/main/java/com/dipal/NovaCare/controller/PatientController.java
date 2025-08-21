@@ -1,6 +1,7 @@
 package com.dipal.NovaCare.controller;
 
 
+import com.dipal.NovaCare.dto.CreditDTO;
 import com.dipal.NovaCare.dto.PatientDTO;
 import com.dipal.NovaCare.model.Patient;
 import com.dipal.NovaCare.service.PatientService;
@@ -27,6 +28,14 @@ public class PatientController {
         return new ResponseEntity<>(
                 patientService.addPatient(patientDTO),
                 HttpStatus.CREATED);
+    }
+    // ... existing
+
+    @PostMapping("/{id}/credits")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Void> addCredits(@PathVariable Long id, @RequestBody CreditDTO creditDTO) {
+        patientService.addCredits(id, creditDTO.getAmount());
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @GetMapping

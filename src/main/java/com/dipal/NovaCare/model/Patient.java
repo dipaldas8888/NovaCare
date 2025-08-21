@@ -31,4 +31,7 @@ public class Patient {
     @OneToOne
     @JoinColumn(name = "user_id", referencedColumnName = "id", unique = true)
     private User user;
+
+    @Column(nullable = false)
+    private Double credits = 6.0; // N
 }

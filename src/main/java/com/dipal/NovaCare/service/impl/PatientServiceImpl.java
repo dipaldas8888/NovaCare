@@ -58,4 +58,10 @@ public class PatientServiceImpl implements PatientService {
         Patient patient = getPatientById(id);
         patientRepository.delete(patient);
     }
+    @Override
+    public void addCredits(Long patientId, Double amount) {
+        Patient patient = getPatientById(patientId);
+        patient.setCredits(patient.getCredits() + amount);
+        patientRepository.save(patient);
+    }
 }

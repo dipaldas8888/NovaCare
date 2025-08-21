@@ -12,4 +12,5 @@ public interface PatientService {
     Patient getPatientById(Long id);
     Patient updatePatient(Long id, PatientDTO patientDTO);
     void deletePatient(Long id);
+    void addCredits(Long patientId, Double amount);
 }

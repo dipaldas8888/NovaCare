@@ -30,6 +30,5 @@ build/
 !**/src/test/**/build/
 
 ### VS Code ###
-.vscode/
-src/main/resources/application.properties
-uploads/
+/src/resources/application.properties
+/src/resources/firebase-service-account.json
