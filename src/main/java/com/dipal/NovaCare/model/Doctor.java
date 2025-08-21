@@ -34,6 +34,9 @@ public class Doctor {
     @Column(name = "image_url")
     private String imageUrl;
 
+    @Column(name = "image_file_id")
+    private String imageFileId;
+
     @OneToOne
     @JoinColumn(name = "user_id", referencedColumnName = "id", unique = true)
     private User user;

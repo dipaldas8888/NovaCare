@@ -10,12 +10,10 @@ import org.springframework.http.ResponseEntity;
 
 public interface UserService {
     String register(RegisterDTO registerDTO);
-    String login(LoginDTO loginDTO);
     User getCurrentUser();
 
-   
 
-    String registerAdmin(RegisterDTO registerDTO, String secret);
+    String registerDoctor(RegisterDTO registerDTO, String secret);
 
     ResponseEntity<?> resetPassword(ResetPasswordDTO resetPasswordDTO);
 
