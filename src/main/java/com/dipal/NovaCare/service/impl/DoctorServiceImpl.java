@@ -6,6 +6,7 @@ import com.dipal.NovaCare.model.Doctor;
 import com.dipal.NovaCare.repository.DoctorRepository;
 import com.dipal.NovaCare.service.DoctorService;
 import com.dipal.NovaCare.service.ImageStorageService;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
@@ -16,11 +17,14 @@ public class DoctorServiceImpl implements DoctorService {
 
     private final DoctorRepository doctorRepository;
     private final ImageStorageService imageStorageService;
+    private final CurrentUserService currentUserService;
+
 
     public DoctorServiceImpl(DoctorRepository doctorRepository,
-                             ImageStorageService imageStorageService) {
+                             ImageStorageService imageStorageService, CurrentUserService currentUserService) {
         this.doctorRepository = doctorRepository;
         this.imageStorageService = imageStorageService;
+        this.currentUserService = currentUserService;
     }
 
     @Override
@@ -53,6 +57,25 @@ public class DoctorServiceImpl implements DoctorService {
     @Override
     public List<Doctor> getDoctorsBySpecialization(String specialization) {
         return doctorRepository.findBySpecialization(specialization);
+    }
+    public Doctor getMyDoctor() {
+        var user = currentUserService.currentUser();
+        return doctorRepository.findByUserId(user.getId())
+                .orElseThrow(() -> new EntityNotFoundException("Doctor profile not found"));
+    }
+
+    public Doctor updateMyDoctor(DoctorDTO dto) {
+        var d = getMyDoctor();
+        if (dto.getName() != null) d.setName(dto.getName());
+        if (dto.getSpecialization() != null) d.setSpecialization(dto.getSpecialization());
+        if (dto.getContactNumber() != null) d.setContactNumber(dto.getContactNumber());
+        if (dto.getEmail() != null) d.setEmail(dto.getEmail());
+        if (dto.getSchedule() != null) d.setSchedule(dto.getSchedule());
+        if (dto.getMaxPatientsPerDay() != null) d.setMaxPatientsPerDay(dto.getMaxPatientsPerDay());
+        if (dto.getImage() != null && !dto.getImage().isEmpty()) {
+            // upload, set d.setImageUrl(uploadedUrl);
+        }
+        return doctorRepository.save(d);
     }
 
     @Override

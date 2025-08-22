@@ -25,7 +25,7 @@ public class DoctorController {
 
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')" )
     public ResponseEntity<Doctor> addDoctor(@ModelAttribute DoctorDTO doctorDTO) {
         return new ResponseEntity<>(doctorService.addDoctor(doctorDTO), HttpStatus.CREATED);
     }
@@ -43,6 +43,17 @@ public class DoctorController {
     public ResponseEntity<Doctor> getDoctorById(@PathVariable Long id) {
         return new ResponseEntity<>(doctorService.getDoctorById(id), HttpStatus.OK);
     }
+    @GetMapping("/me")
+    @PreAuthorize("hasRole('DOCTOR') or hasRole('ADMIN')")
+    public ResponseEntity<Doctor> me() {
+        return ResponseEntity.ok(doctorService.getMyDoctor());
+    }
+
+    @PutMapping(value = "/me", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PreAuthorize("hasRole('DOCTOR') or hasRole('ADMIN')")
+    public ResponseEntity<Doctor> updateMe(@ModelAttribute DoctorDTO dto) {
+        return ResponseEntity.ok(doctorService.updateMyDoctor(dto));
+    }
 
     @GetMapping("/specialization/{specialization}")
     public ResponseEntity<List<Doctor>> getDoctorsBySpecialization(
@@ -54,7 +65,7 @@ public class DoctorController {
 
 
     @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('DOCTOR')") // Allow both ADMIN and DOCTOR
     public ResponseEntity<Doctor> updateDoctor(
             @PathVariable Long id,
             @ModelAttribute DoctorDTO doctorDTO) {
