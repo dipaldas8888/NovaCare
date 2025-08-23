@@ -19,27 +19,25 @@ import java.util.List;
 public class PatientController {
     private final PatientService patientService;
 
-    // Create profile (first time)
     @PostMapping
-    @PreAuthorize("hasRole('ADMIN') or hasRole('USER')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('PATIENT')")
     public ResponseEntity<Patient> addPatient(@RequestBody PatientDTO dto) {
         return new ResponseEntity<>(patientService.addPatient(dto), HttpStatus.CREATED);
     }
 
-    // --- NEW: self endpoints ---
+    // -
     @GetMapping("/me")
-    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
+    @PreAuthorize("hasRole('PATIENT') or hasRole('ADMIN')")
     public ResponseEntity<Patient> me() {
         return ResponseEntity.ok(patientService.getMyPatient());
     }
 
     @PutMapping("/me")
-    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
+    @PreAuthorize("hasRole('PATIENT') or hasRole('ADMIN')")
     public ResponseEntity<Patient> updateMe(@RequestBody PatientDTO dto) {
         return ResponseEntity.ok(patientService.updateMyPatient(dto));
     }
 
-    // by-id: admin OR owner
     @GetMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN') or @authz.canAccessPatient(#id)")
     public ResponseEntity<Patient> getPatientById(@PathVariable Long id) {
@@ -53,7 +51,7 @@ public class PatientController {
     }
 
     @GetMapping
-    @PreAuthorize("hasRole('ADMIN') or hasRole('USER')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('PATIENT')")
     public ResponseEntity<List<Patient>> getAllPatients() {
         return new ResponseEntity<>(patientService.getAllPatients(), HttpStatus.OK);
     }

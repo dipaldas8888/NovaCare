@@ -61,9 +61,7 @@ public class UserServiceImpl implements UserService {
     @PostConstruct
     public void initAdmin() {
         try {
-            // Try to get the user by email first
             UserRecord userRecord = FirebaseAuth.getInstance().getUserByEmail(adminEmail);
-            // User exists, maybe log info and return
             System.out.println("Admin user already exists: " + adminEmail);
         } catch (FirebaseAuthException e) {
             if (e.getAuthErrorCode() == AuthErrorCode.USER_NOT_FOUND) {
@@ -79,7 +77,6 @@ public class UserServiceImpl implements UserService {
                     throw new CustomException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to create Firebase admin: " + ex.getMessage());
                 }
             } else {
-                // Other FirebaseAuthException
                 throw new CustomException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to create Firebase admin: " + e.getMessage());
             }
         }
@@ -107,7 +104,7 @@ public class UserServiceImpl implements UserService {
         user.setFirebaseUid(firebaseUser.getUid());
         user.setEmail(registerDTO.getEmail());
 
-        Role userRole = roleRepository.findByName("ROLE_USER")
+        Role userRole = roleRepository.findByName("PATIENT")
                 .orElseThrow(() -> new CustomException(HttpStatus.INTERNAL_SERVER_ERROR, "User role not found"));
         user.setRoles(Collections.singleton(userRole));
 
@@ -153,7 +150,7 @@ public class UserServiceImpl implements UserService {
         user.setFirebaseUid(firebaseUser.getUid());
         user.setEmail(registerDTO.getEmail());
 
-        Role doctorRole = roleRepository.findByName("ROLE_DOCTOR")
+        Role doctorRole = roleRepository.findByName("DOCTOR")
                 .orElseThrow(() -> new CustomException(HttpStatus.INTERNAL_SERVER_ERROR, "Doctor role not found"));
         user.setRoles(Collections.singleton(doctorRole));
 

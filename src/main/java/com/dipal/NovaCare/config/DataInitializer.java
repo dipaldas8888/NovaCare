@@ -1,6 +1,5 @@
 package com.dipal.NovaCare.config;
 
-
 import com.dipal.NovaCare.model.Role;
 import com.dipal.NovaCare.repository.RoleRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,20 +15,20 @@ public class DataInitializer {
 
     @PostConstruct
     public void initRoles() {
-        if (roleRepository.findByName("ROLE_USER").isEmpty()) {
-            Role userRole = new Role();
-            userRole.setName("ROLE_USER");
-            roleRepository.save(userRole);
+        if (roleRepository.findByName("PATIENT").isEmpty()) {
+            Role r = new Role();
+            r.setName("PATIENT");
+            roleRepository.save(r);
         }
-        if (roleRepository.findByName("ROLE_ADMIN").isEmpty()) {
-            Role adminRole = new Role();
-            adminRole.setName("ROLE_ADMIN");
-            roleRepository.save(adminRole);
+        if (roleRepository.findByName("ADMIN").isEmpty()) {
+            Role r = new Role();
+            r.setName("ADMIN");
+            roleRepository.save(r);
         }
-        if (roleRepository.findByName("ROLE_DOCTOR").isEmpty()) {
-            Role adminRole = new Role();
-            adminRole.setName("ROLE_DOCTOR");
-            roleRepository.save(adminRole);
+        if (roleRepository.findByName("DOCTOR").isEmpty()) {
+            Role r = new Role();
+            r.setName("DOCTOR");
+            roleRepository.save(r);
         }
     }
 }
