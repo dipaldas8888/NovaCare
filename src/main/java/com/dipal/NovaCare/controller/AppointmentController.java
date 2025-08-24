@@ -23,14 +23,14 @@ public class AppointmentController {
     }
 
     @PostMapping
-    @PreAuthorize("hasRole('ADMIN') or hasRole('USER')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('PATIENT')")
     public ResponseEntity<Appointment> bookAppointment(
             @RequestBody AppointmentDTO appointmentDTO) {
         return new ResponseEntity<>(
                 appointmentService.bookAppointment(appointmentDTO),
                 HttpStatus.CREATED);
     }
-    // ... existing
+
 
     @PutMapping("/{id}/accept")
     @PreAuthorize("hasRole('DOCTOR')")
@@ -46,7 +46,7 @@ public class AppointmentController {
     }
 
     @GetMapping
-    @PreAuthorize("hasRole('ADMIN') or hasRole('USER')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('PATIENT')")
     public ResponseEntity<List<Appointment>> getAllAppointments() {
         return new ResponseEntity<>(
                 appointmentService.getAllAppointments(),
@@ -54,7 +54,7 @@ public class AppointmentController {
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('USER')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('PATIENT')")
     public ResponseEntity<Appointment> getAppointmentById(@PathVariable Long id) {
         return new ResponseEntity<>(
                 appointmentService.getAppointmentById(id),
@@ -91,7 +91,7 @@ public class AppointmentController {
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('USER')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('PATIENT')")
     public ResponseEntity<Appointment> updateAppointment(
             @PathVariable Long id,
             @RequestBody AppointmentDTO appointmentDTO) {
@@ -101,7 +101,7 @@ public class AppointmentController {
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('USER')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('PATIENT')")
     public ResponseEntity<Void> cancelAppointment(@PathVariable Long id) {
         appointmentService.cancelAppointment(id);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
