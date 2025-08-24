@@ -73,7 +73,11 @@ public class DoctorServiceImpl implements DoctorService {
         if (dto.getSchedule() != null) d.setSchedule(dto.getSchedule());
         if (dto.getMaxPatientsPerDay() != null) d.setMaxPatientsPerDay(dto.getMaxPatientsPerDay());
         if (dto.getImage() != null && !dto.getImage().isEmpty()) {
-            // upload, set d.setImageUrl(uploadedUrl);
+            // delete previous file, if any
+            imageStorageService.deleteByFileId(d.getImageFileId());
+            var up = imageStorageService.uploadDoctorImage(dto.getImage());
+            d.setImageUrl(up.url);
+            d.setImageFileId(up.fileId);
         }
         return doctorRepository.save(d);
     }

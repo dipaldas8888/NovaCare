@@ -8,6 +8,7 @@ public interface ImageStorageService {
         public final String fileId;
         public UploadResult(String url, String fileId) { this.url = url; this.fileId = fileId; }
     }
-    UploadResult uploadDoctorImage(MultipartFile file);
+    UploadResult uploadDoctorImage(org.springframework.web.multipart.MultipartFile file);
     void deleteByFileId(String fileId);
 }
+
