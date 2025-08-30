@@ -27,7 +27,7 @@ public class SecurityConfig {
                 .cors(cors -> {})
 
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/**").permitAll()
+                        .requestMatchers("/api/auth/**","/api/doctors/specialization/**","/api/doctors/**").permitAll()
 
                         // Appointments
                         .requestMatchers("/api/appointments").hasAnyRole("ADMIN", "PATIENT")
