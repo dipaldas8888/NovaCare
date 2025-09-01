@@ -90,6 +90,8 @@ public class AppointmentServiceImpl implements AppointmentService {
         appointment.setType(appointmentDTO.getType()); // New
         appointment.setStatus("Video".equals(appointmentDTO.getType()) ? "Pending" : "Scheduled"); // New logic
         appointment.setNotes(appointmentDTO.getNotes());
+        appointment.setPatientName(appointmentDTO.getPatientName());
+        appointment.setPatientMobile(appointmentDTO.getPatientMobile());
 
         return appointmentRepository.save(appointment);
     }
@@ -195,6 +197,13 @@ public class AppointmentServiceImpl implements AppointmentService {
 
         if (appointmentDTO.getNotes() != null) {
             appointment.setNotes(appointmentDTO.getNotes());
+        }
+        if (appointmentDTO.getPatientName() != null) {
+            appointment.setPatientName(appointmentDTO.getPatientName());
+        }
+
+        if (appointmentDTO.getPatientMobile() != null) {
+            appointment.setPatientMobile(appointmentDTO.getPatientMobile());
         }
 
         return appointmentRepository.save(appointment);

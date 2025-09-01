@@ -32,7 +32,14 @@ public class Appointment {
     private String notes;
 
     @Column(nullable = false)
-    private String type; // Normal, Video (new field for appointment type)
+    private String type;
+
+    @Column(nullable = true)
+    private String patientName;
+
+    @Column(nullable = true)
+    private String patientMobile;
+
 
     @Column
     private String videoSessionId;
