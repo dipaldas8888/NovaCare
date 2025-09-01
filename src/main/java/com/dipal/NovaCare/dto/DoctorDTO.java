@@ -13,4 +13,7 @@ public class DoctorDTO {
     private String schedule;
     private Integer maxPatientsPerDay;
     private MultipartFile image;
+    private String qualification;
+    private Integer experience;
+    private String profileInfo;
 }

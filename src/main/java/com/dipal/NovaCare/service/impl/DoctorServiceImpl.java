@@ -19,9 +19,11 @@ public class DoctorServiceImpl implements DoctorService {
     private final ImageStorageService imageStorageService;
     private final CurrentUserService currentUserService;
 
-
-    public DoctorServiceImpl(DoctorRepository doctorRepository,
-                             ImageStorageService imageStorageService, CurrentUserService currentUserService) {
+    public DoctorServiceImpl(
+            DoctorRepository doctorRepository,
+            ImageStorageService imageStorageService,
+            CurrentUserService currentUserService
+    ) {
         this.doctorRepository = doctorRepository;
         this.imageStorageService = imageStorageService;
         this.currentUserService = currentUserService;
@@ -37,6 +39,10 @@ public class DoctorServiceImpl implements DoctorService {
         d.setSchedule(dto.getSchedule());
         d.setMaxPatientsPerDay(dto.getMaxPatientsPerDay());
 
+        d.setQualification(dto.getQualification());
+        d.setExperience(dto.getExperience());
+        d.setProfileInfo(dto.getProfileInfo());
+
         if (dto.getImage() != null && !dto.getImage().isEmpty()) {
             var up = imageStorageService.uploadDoctorImage(dto.getImage());
             d.setImageUrl(up.url);
@@ -46,7 +52,9 @@ public class DoctorServiceImpl implements DoctorService {
     }
 
     @Override
-    public List<Doctor> getAllDoctors() { return doctorRepository.findAll(); }
+    public List<Doctor> getAllDoctors() {
+        return doctorRepository.findAll();
+    }
 
     @Override
     public Doctor getDoctorById(Long id) {
@@ -58,6 +66,7 @@ public class DoctorServiceImpl implements DoctorService {
     public List<Doctor> getDoctorsBySpecialization(String specialization) {
         return doctorRepository.findBySpecialization(specialization);
     }
+
     public Doctor getMyDoctor() {
         var user = currentUserService.currentUser();
         return doctorRepository.findByUserId(user.getId())
@@ -72,8 +81,12 @@ public class DoctorServiceImpl implements DoctorService {
         if (dto.getEmail() != null) d.setEmail(dto.getEmail());
         if (dto.getSchedule() != null) d.setSchedule(dto.getSchedule());
         if (dto.getMaxPatientsPerDay() != null) d.setMaxPatientsPerDay(dto.getMaxPatientsPerDay());
+
+        if (dto.getQualification() != null) d.setQualification(dto.getQualification());
+        if (dto.getExperience() != null) d.setExperience(dto.getExperience());
+        if (dto.getProfileInfo() != null) d.setProfileInfo(dto.getProfileInfo());
+
         if (dto.getImage() != null && !dto.getImage().isEmpty()) {
-            // delete previous file, if any
             imageStorageService.deleteByFileId(d.getImageFileId());
             var up = imageStorageService.uploadDoctorImage(dto.getImage());
             d.setImageUrl(up.url);
@@ -85,15 +98,18 @@ public class DoctorServiceImpl implements DoctorService {
     @Override
     public Doctor updateDoctor(Long id, DoctorDTO dto) {
         Doctor d = getDoctorById(id);
-        d.setName(dto.getName());
-        d.setSpecialization(dto.getSpecialization());
-        d.setContactNumber(dto.getContactNumber());
-        d.setEmail(dto.getEmail());
-        d.setSchedule(dto.getSchedule());
-        d.setMaxPatientsPerDay(dto.getMaxPatientsPerDay());
+        if (dto.getName() != null) d.setName(dto.getName());
+        if (dto.getSpecialization() != null) d.setSpecialization(dto.getSpecialization());
+        if (dto.getContactNumber() != null) d.setContactNumber(dto.getContactNumber());
+        if (dto.getEmail() != null) d.setEmail(dto.getEmail());
+        if (dto.getSchedule() != null) d.setSchedule(dto.getSchedule());
+        if (dto.getMaxPatientsPerDay() != null) d.setMaxPatientsPerDay(dto.getMaxPatientsPerDay());
+
+        if (dto.getQualification() != null) d.setQualification(dto.getQualification());
+        if (dto.getExperience() != null) d.setExperience(dto.getExperience());
+        if (dto.getProfileInfo() != null) d.setProfileInfo(dto.getProfileInfo());
 
         if (dto.getImage() != null && !dto.getImage().isEmpty()) {
-            // delete previous cloud file (if any)
             imageStorageService.deleteByFileId(d.getImageFileId());
             var up = imageStorageService.uploadDoctorImage(dto.getImage());
             d.setImageUrl(up.url);

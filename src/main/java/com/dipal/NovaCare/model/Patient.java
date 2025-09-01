@@ -33,5 +33,5 @@ public class Patient {
     private User user;
 
     @Column(nullable = false)
-    private Double credits = 6.0; // N
+    private Double credits = 30.0; // N
 }

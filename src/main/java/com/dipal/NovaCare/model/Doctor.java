@@ -37,6 +37,15 @@ public class Doctor {
     @Column(name = "image_file_id")
     private String imageFileId;
 
+    @Column(nullable = true)
+    private String qualification;
+
+    @Column(nullable = true)
+    private Integer experience;
+
+    @Column(length = 2000)
+    private String profileInfo;
+
     @OneToOne
     @JoinColumn(name = "user_id", referencedColumnName = "id", unique = true)
     private User user;
